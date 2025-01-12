@@ -1,0 +1,78 @@
+# Build the image
+#   docker compose up --build -d
+
+# start a container
+#   docker compose up --watch
+
+# Stop containers
+#   docker compose stop
+
+# Terminate containers to free space
+#   docker compose down
+
+# Execute commands on docker contained
+#   docker exec <service> <command>
+#   docker exec mrc-admin npm install
+
+services:
+  # Admin portal
+  revive-admin:
+    container_name: revive-admin
+    image: revive-admin
+    build:
+      context: ./../revive-ticketing-system
+      dockerfile: Dockerfile
+    ports:
+      - ${HTTP_PORT_ADMIN}:${HTTP_PORT_ADMIN}
+    develop:
+      watch:
+        - action: sync
+          path: ./../revive-ticketing-system
+          target: /var/www/revive-admin
+    volumes:
+      - admin:/var/www/revive-admin
+
+  # User Service
+  revive-user-service:
+    container_name: revive-user-service
+    image: revive-user-service
+    build:
+      context: ./../revive-user-service
+      dockerfile: Dockerfile
+    ports:
+      - ${HTTP_PORT_USERS}:${HTTP_PORT_USERS}
+      - ${HTTPS_PORT_USERS}:${HTTPS_PORT_USERS}
+    develop:
+      watch:
+        - action: sync+restart
+          path: ./../revive-user-service
+          target: /var/www/revive-user-service
+    volumes:
+      - api:/var/www/revive-user-service
+    depends_on:
+      - revive-database
+    links:
+      - revive-database
+
+  # Revive Database
+  revive-database:
+    container_name: revive-database
+    image: revive-database
+    build:
+      context: ./mysql
+      dockerfile: Dockerfile
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    ports:
+      - ${MYSQL_PORT}:${MYSQL_PORT}
+    volumes:
+      - mysql:/var/lib/mysql
+      - ./mysql:/etc/mysql/conf.d
+
+volumes:
+  admin: {}
+  user-service: {}
+  mysql: {}

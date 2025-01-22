@@ -16,21 +16,21 @@
 
 services:
   # Admin portal
-  revive-admin:
-    container_name: revive-admin
-    image: revive-admin
+  revive-admin-v2:
+    container_name: revive-admin-v2
+    image: revive-admin-v2
     build:
-      context: ./../revive-ticketing-system
+      context: ./../revive-admin-v2
       dockerfile: Dockerfile
     ports:
       - ${HTTP_PORT_ADMIN}:${HTTP_PORT_ADMIN}
     develop:
       watch:
         - action: sync
-          path: ./../revive-ticketing-system
-          target: /var/www/revive-admin
+          path: ./../revive-admin-v2
+          target: /var/www/revive-admin-v2
     volumes:
-      - admin:/var/www/revive-admin
+      - admin-v2:/var/www/revive-admin-v2
 
   # User Service
   revive-user-service:
@@ -48,7 +48,28 @@ services:
           path: ./../revive-user-service
           target: /var/www/revive-user-service
     volumes:
-      - api:/var/www/revive-user-service
+      - user-service:/var/www/revive-user-service
+    depends_on:
+      - revive-database
+    links:
+      - revive-database
+
+  revive-ticket-service:
+    container_name: revive-ticket-service
+    image: revive-ticket-service
+    build:
+      context: ./../revive-ticket-service
+      dockerfile: Dockerfile
+    ports:
+      - ${HTTP_PORT_TICKETS}:${HTTP_PORT_TICKETS}
+      - ${HTTPS_PORT_TICKETS}:${HTTPS_PORT_TICKETS}
+    develop:
+      watch:
+        - action: sync+restart
+          path: ./../revive-ticket-service
+          target: /var/www/revive-ticket-service
+    volumes:
+      - ticket-service:/var/www/revive-ticket-service
     depends_on:
       - revive-database
     links:
@@ -73,6 +94,7 @@ services:
       - ./mysql:/etc/mysql/conf.d
 
 volumes:
-  admin: {}
+  admin-v2: {}
   user-service: {}
+  ticket-service: {}
   mysql: {}

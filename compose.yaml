@@ -54,6 +54,7 @@ services:
     links:
       - revive-database
 
+  # Ticket Service
   revive-ticket-service:
     container_name: revive-ticket-service
     image: revive-ticket-service
@@ -70,6 +71,28 @@ services:
           target: /var/www/revive-ticket-service
     volumes:
       - ticket-service:/var/www/revive-ticket-service
+    depends_on:
+      - revive-database
+    links:
+      - revive-database
+
+  # Branch service
+  revive-branch-service:
+    container_name: revive-branch-service
+    image: revive-branch-service
+    build:
+      context: ./../revive-branch-service
+      dockerfile: Dockerfile
+    ports:
+      - ${HTTP_PORT_BRANCHES}:${HTTP_PORT_BRANCHES}
+      - ${HTTPS_PORT_BRANCHES}:${HTTPS_PORT_BRANCHES}
+    develop:
+      watch:
+        - action: sync+restart
+          path: ./../revive-branch-service
+          target: /var/www/revive-branch-service
+    volumes:
+      - branch-service:/var/www/revive-branch-service
     depends_on:
       - revive-database
     links:
@@ -97,4 +120,5 @@ volumes:
   admin-v2: {}
   user-service: {}
   ticket-service: {}
+  branch-service: {}
   mysql: {}

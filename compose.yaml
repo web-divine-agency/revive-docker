@@ -98,6 +98,28 @@ services:
     links:
       - revive-database
 
+  # Logger service
+  revive-logger-service:
+    container_name: revive-logger-service
+    image: revive-logger-service
+    build:
+      context: ./../revive-logger-service
+      dockerfile: Dockerfile
+    ports:
+      - ${HTTP_PORT_LOGS}:${HTTP_PORT_LOGS}
+      - ${HTTPS_PORT_LOGS}:${HTTPS_PORT_LOGS}
+    develop:
+      watch:
+        - action: sync+restart
+          path: ./../revive-logger-service
+          target: /var/www/revive-logger-service
+    volumes:
+      - logger-service:/var/www/revive-logger-service
+    depends_on:
+      - revive-database
+    links:
+      - revive-database
+
   # Revive Database
   revive-database:
     container_name: revive-database
@@ -121,4 +143,5 @@ volumes:
   user-service: {}
   ticket-service: {}
   branch-service: {}
+  logger-service: {}
   mysql: {}

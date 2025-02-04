@@ -120,6 +120,28 @@ services:
     links:
       - revive-database
 
+  # Resource service
+  revive-resource-service:
+    container_name: revive-resource-service
+    image: revive-resource-service
+    build:
+      context: ./../revive-resource-service
+      dockerfile: Dockerfile
+    ports:
+      - ${HTTP_PORT_RESOURCES}:${HTTP_PORT_RESOURCES}
+      - ${HTTPS_PORT_RESOURCES}:${HTTPS_PORT_RESOURCES}
+    develop:
+      watch:
+        - action: sync+restart
+          path: ./../revive-resource-service
+          target: /var/www/revive-resource-service
+    volumes:
+      - resource-service:/var/www/revive-resource-service
+    depends_on:
+      - revive-database
+    links:
+      - revive-database
+
   # Revive Database
   revive-database:
     container_name: revive-database
@@ -144,4 +166,5 @@ volumes:
   ticket-service: {}
   branch-service: {}
   logger-service: {}
+  resource-service: {}
   mysql: {}

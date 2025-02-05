@@ -137,6 +137,7 @@ services:
           target: /var/www/revive-resource-service
     volumes:
       - resource-service:/var/www/revive-resource-service
+      - ./../revive-resource-service/src/uploads:/var/www/revive-resource-service/src/uploads
     depends_on:
       - revive-database
     links:

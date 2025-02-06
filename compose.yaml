@@ -135,6 +135,8 @@ services:
         - action: sync+restart
           path: ./../revive-resource-service
           target: /var/www/revive-resource-service
+          ignore:
+            - src/uploads
     volumes:
       - resource-service:/var/www/revive-resource-service
       - ./../revive-resource-service/src/uploads:/var/www/revive-resource-service/src/uploads

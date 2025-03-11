@@ -11,8 +11,7 @@
 #   docker compose down
 
 # Execute commands on docker contained
-#   docker exec <service> <command>
-#   docker exec mrc-admin npm install
+#   docker exec it <service> <command>
 
 services:
   # Admin portal
@@ -32,6 +31,28 @@ services:
     volumes:
       - admin-v2:/var/www/revive-admin-v2
 
+  # Database Service
+  revive-database-service:
+    container_name: revive-database-service
+    image: revive-database-service
+    build:
+      context: ./../revive-database-service
+      dockerfile: Dockerfile
+    ports:
+      - ${HTTP_PORT_DATABASE}:${HTTP_PORT_DATABASE}
+      - ${HTTPS_PORT_DATABASE}:${HTTPS_PORT_DATABASE}
+    develop:
+      watch:
+        - action: sync+restart
+          path: ./../revive-database-service
+          target: /var/www/revive-database-service
+    volumes:
+      - database-service:/var/www/revive-database-service
+    depends_on:
+      - revive-mysql
+    links:
+      - revive-mysql
+
   # User Service
   revive-user-service:
     container_name: revive-user-service
@@ -49,10 +70,6 @@ services:
           target: /var/www/revive-user-service
     volumes:
       - user-service:/var/www/revive-user-service
-    depends_on:
-      - revive-database
-    links:
-      - revive-database
 
   # Ticket Service
   revive-ticket-service:
@@ -71,10 +88,6 @@ services:
           target: /var/www/revive-ticket-service
     volumes:
       - ticket-service:/var/www/revive-ticket-service
-    depends_on:
-      - revive-database
-    links:
-      - revive-database
 
   # Branch service
   revive-branch-service:
@@ -93,10 +106,6 @@ services:
           target: /var/www/revive-branch-service
     volumes:
       - branch-service:/var/www/revive-branch-service
-    depends_on:
-      - revive-database
-    links:
-      - revive-database
 
   # Logger service
   revive-logger-service:
@@ -115,10 +124,6 @@ services:
           target: /var/www/revive-logger-service
     volumes:
       - logger-service:/var/www/revive-logger-service
-    depends_on:
-      - revive-database
-    links:
-      - revive-database
 
   # Resource service
   revive-resource-service:
@@ -140,15 +145,11 @@ services:
     volumes:
       - resource-service:/var/www/revive-resource-service
       - ./../revive-resource-service/src/uploads:/var/www/revive-resource-service/src/uploads
-    depends_on:
-      - revive-database
-    links:
-      - revive-database
 
-  # Revive Database
-  revive-database:
-    container_name: revive-database
-    image: revive-database
+  # Revive Mysql
+  revive-mysql:
+    container_name: revive-mysql
+    image: revive-mysql
     build:
       context: ./mysql
       dockerfile: Dockerfile
@@ -165,6 +166,7 @@ services:
 
 volumes:
   admin-v2: {}
+  database-service: {}
   user-service: {}
   ticket-service: {}
   branch-service: {}
